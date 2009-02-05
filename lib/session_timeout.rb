@@ -11,22 +11,18 @@ module SessionTimeout
   end
   
   def check_session_expiry(time, opts)
-    logger.info "::: Checking session expiry"
     if session[:expires_at]
       if session_has_timed_out?
-        logger.info "::: Session has expired, resetting session."
+        logger.info "\033[0;31mSession has expired!\033[0m"
         reset_session
         unless opts[:after_timeout].nil?
-          logger.info "::: Calling after timeout callback"
           return opts[:after_timeout].call(self) if opts[:after_timeout].instance_of?(Proc)
           return self.send(opts[:after_timeout]) if opts[:after_timeout].instance_of?(Symbol)
         end
       else
-        logger.info "::: Session has not expired. Reinitialising."
         initialize_session_expiry(time)
       end
     else
-      "::: Session expiry not initialized"
       initialize_session_expiry(time)
     end
   end
@@ -34,7 +30,8 @@ module SessionTimeout
   protected    
     def initialize_session_expiry(time)
       expires_at = time.from_now
-      logger.info "::: Initializing session expiry. Expires at #{expires_at}"
+      formatted_expires_at = expires_at.strftime('%T')
+      logger.info "\033[0;34mSession expires at \033[0;1m#{formatted_expires_at}\033[0m"
       session[:expires_at] = expires_at
     end
     
